@@ -1,0 +1,209 @@
+#Bloodhunter
+!servalias bloodhunter embed -title "Guide to Blodd Hunter Aliases" -desc " **If you are using Gsheet, set your class to `Blood_Hunter`**
+Run `!level` to create all the necessary counters, if it doesn't work make sure you don't have a private `!level` alias, or subscribe to the correct gvar with `!level sub a55768e6-9b31-4dfc-9fbd-2a601e419823`
+!rite for the Crimson Rite alias.
+rite for the Crimson Rite snippet.
+!hybrid for Hybrid Transformation.
+!brandcast for Brand of Castigation.
+!bmark for Blood Curse of the Marked.
+!bbloat for Blood Curse of the Bloated
+!bmud for Blood Curse of the Muddled Mind
+!bexpose for Blood Curse of Exposure
+!bpup for Blood Curse of the Fallen Puppet
+!pupaoo for making the attack with the blood curse of the Fallen Puppet (Only works in Avrae initiative, use `!ma test hunter attack` if you are not using avrae initiative.)
+!bbind for Blood Curse of Binding\*
+!bcorr for Blood Curse of Corrosion\*
+!banx for Blood Curse of the Anxious \*
+!bexo for Blood Curse of the Exorcist \*
+!beye for Blood Curse of the Eyeless \*
+!bhowl for Blood Curse of the Howl \*
+!bsoul for Blood Curse of the Soulless \*
+
+
+\* Aliases marked with an * are not fully supported in Avrae Initiative
+" -footer "Credit to @""RiptideMatt and the folks on the Avrae Dev server, check the footers. Contact @""Org or any of the Bot Wranglers if there are issues." -color 53dbfa -thumb
+
+#Rite
+!servalias rite tembed {{args = &ARGS&}}
+{{get_gvar("6a73eb69-3005-4e74-9458-18b252087a0f").replace('@',str(args))}}
+
+!servsnippet rite {{T = get("CrimsonRite", "rite").lower()}} {{B=int(get('BloodHunterLevel',get('Blood_HunterLevel')))}} -d "1d{{4+2*(B>4)+2*(B>10)+2*(B>16)}}[{{T}}]"
+
+#Hybrid
+!servalias hybrid embed 
+{{B,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))),'-i' in &ARGS&,combat(),f'!hybrid [-i]',"Hybrid Transformation"}}
+{{v,C=cc_exists(cc) and get_cc(cc)>0,cc_exists(cc)}}
+{{'' if i else mod_cc(cc, -1) if v else err(f'You must take a long rest to regain use of this feature\n **{H}**') if B>2 and "Lycan" in get('subclass') else err(f'You do not have this Ability!\n`!level blood 3 lycan`')}} 
+-title "<name> {{"activates" if v or i else "tries to activate"}} their Hybrid Form!" 
+-desc "As a bonus action, you can transform into your Hybrid form for up to 1 hour. You can speak, use equipment, and wear armor in this form. You can revert to your normal form earlier by using a bonus action. You automatically revert to your normal form if you fall unconscious, drop to 0 hit points, or die."
+{{c.me.add_effect('Hybrid Form',f'-resist slashing -resist bludgeoning -resist piercing -d {"1" if (B<11) else "2" if (B<18) else "3"} -ac +1') if c and c.me and (v or i) else ''}}
+-f "Effect|{{c.me.get_effect("Hybrid Form") if c and c.me and (v or i) else "Not in Initiative"}}"
+-f "{{cc}}{{"" if i else " (-1)" if v else ""}}|{{"Ignored" if i else cc_str(cc) if C else "*None*"}}" 
+-footer "{{H}} | Made by @""RiptideMatt" -color <color> -thumb <image>
+
+#Brandcast
+!servalias brandcast embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!brandcast [-i] [-t target]',"Brand of Castigation"}}
+{{v,T=cc_exists(cc) and get_cc(cc)>0,a.last("t")}}
+{{T=c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} {{cc}} on {{T.name if T else "the Target"}}!"
+{{f'-desc "Whenever you damage a creature with your Crimson Rite feature, you can chose to sear an arcane brand of hemocraft magic into it (requires no action). You always know the direction of the branded creature, and each time the branded creature deals damage to you or a creature you can see within 5 feet of you, the branded creature suffers psychic damage equal to your Intelligence modifier (minimum of 1 damage)."' if (B>5) or i else err(f'You do not have this Ability!\n **{H}**')}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n **{H}**')}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt" -color <color> -thumb <image>
+{{T.add_effect('Branded', '-dur 100') if T else ''}}
+-f "{{T.name if T else "Effect"}}|{{T.get_effect('Branded') if v and T else "Not in initiative/No Target"}}"
+{{c.me.add_effect('Brand', f'-attack "|{intelligenceMod}[psychic]|Brand"') if c and c.me else ''}}
+-f "Effect: <name>|{{c.me.get_effect('Brand') if c and c.me and v else "Not in initiative"}}"
+
+#Bmark
+!servalias bmark embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!bmark [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Marked on {{T.name if T else "the Target"}}!"
+{{f'-desc "As a bonus action, you can mark a creature within 30 feet of you. Until the end of your turn, you roll an additional 1d{m} whenever you deal rite damage to the target."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|The next attack roll you make against the target before the end of your turn has advantage."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt" -color <color> -thumb <image>
+
+{{T.add_effect('Marked','-dur -1') if T else ''}}
+-f "{{T.name if T else "Effect"}}|{{T.get_effect('Marked') if v and T else "Not in initiative"}}"
+
+#bbloat
+!alias bbloat embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!bmud [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Bloated Agony on {{T.name if T else "the Target"}}!"
+{{f'-desc "Until your next turn ends, the creature has disadvantage on Strength and Dexterity ability checks, and suffers 1d8 necrotic damage if it makes more than one melee or ranged attack during its turn."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|This curse lasts for 1 minute. At the end of each of its turns, the cursed creature can make a Constitution saving throw. On a success, this curse ends."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt" -color <color> -thumb <image>
+
+{{d="10" if amp else "1"}}
+{{b='Bloated (Disdvantage on Strength and Dexterity Checks)'}}
+{{T.add_effect(b, f'-dur {d}') if T else ''}}
+-f "{{T.name if T else "Effect"}}|{{T.get_effect(b) if v and T else "Not in initiative/No Target"}}"
+{{c.me.add_effect('Bloat Damage', f'-attack "|1d8[necrotic]|Bloat" -dur {d}') if c and c.me and v and T else ''}} 
+-f "Effect: <name>|{{c.me.get_effect('Bloat Damage') if c and c.me and v and T else "Not in initiative"}}"
+
+#bmud
+!alias bmud embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!bmud [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Muddled Mind on {{T.name if T else "the Target"}}!"
+{{f'-desc "As a bonus action, you curse a creature that you can see within 30 feet of you that is concentrating on a spell. That creature has disadvantage on the next Constitution saving throw it must make to maintain concentration before the end of your next turn."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|The cursed creature has disadvantage on all Constitution saving throws made to maintain concentration of spells until the end of your next turn."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt" -color <color> -thumb <image>
+
+{{T.add_effect('Muddled Mind','-dur 1') if T else ''}}
+-f "{{T.name if T else "Effect"}}|{{T.get_effect('Muddled Mind') if v and T else "Not in initiative/No Target"}}"
+
+#bbind
+!servalias bbind embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!bbind [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of Binding on {{T.name if T else "the Target"}}!"
+{{f'-desc "As a bonus action, you can attempt to bind a creature you can see within 30 feet of you that is no more than one size larger than you. The target must succeed on a Strength saving throw or have their speed be reduced to 0 and they can\'t use reactions until the end of your next turn."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|This curse lasts for 1 minute and can affect a creature regardless of their size category. At the end of each of its turns, the cursed creature can make another Strength saving throw. On a success, this curse ends.."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt, adapted by @""Org" -color <color> -thumb <image>
+{{T.add_effect('Blood Curse of Binding',('-dur 10' if 'amp' in a else '-dur 1')) if T else ''}}
+-f "{{T.name if T else "Effect"}}|{{T.get_effect('Blood Curse of Binding') if v and T else "Not in initiative/No Target"}}"
+
+#bcorr
+!servalias bcorr embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!corr [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of Corrosion on {{T.name if T else "the Target"}}!"
+{{f'-desc "As a bonus action, a creature within 30 feet of you must make a Constitution saving throw or become poisoned. At the end of each of its turns, the target can make another Constitution saving throw. On a success, the curse ends."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|The cursed creature suffers 4d6 necrotic damage, and suffers this damage again every time it fails its Constitution saving throw to end this curse at the end of its turn."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt, adapted by @""Org" -color <color> -thumb <image>
+{{T.add_effect('Blood Curse of Corrosion') if T else ''}}
+-f "{{T.name if T else "Effect"}}|{{T.get_effect('Blood Curse of Corrosion') if v and T else "Not in initiative/No Target"}}"
+
+#banx
+!servalias banx embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!banx [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Anxious on {{T.name if T else "the Target"}}!"
+{{f'-desc "As a bonus action, you magnify the adrenaline in the body of a creature within 30 feet of you, making them susceptible to forceful influence. Until the end of your next turn, all creatures have advantage on Charisma (Intimidation) checks directed at the target creature."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|The next Wisdom saving throw the target has to make before this curse ends has disadvantage."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt, adapted by @""Org" -color <color> -thumb <image>
+{{T.add_effect('Anxious','-dur 1') if T else ''}}
+-f "{{T.name if T else "Effect"}}|{{T.get_effect('Anxious') if v and T else "Not in initiative/No Target"}}"
+
+#bexo
+!servalias bexo embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!bexo [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Anxious on {{T.name if T else "the Target"}}!"
+{{f'-desc "As a bonus action, you can choose one creature you can see within 30 feet of you that is charmed, frightened, or possessed. The target creature is no longer charmed, frightened, or possessed."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|The creature that charmed, frightened, or possessed the target of your curse suffers 3d6 psychic damage and must make a Wisdom saving throw or be stunned until the end of your next turn."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt, adapted by @""Org" -color <color> -thumb <image>
+-f "{{T.name if T else "Effect"}}|{{"initiative currently not supported" if v and T else "Not in initiative/No Target"}}"
+
+#beye
+!servalias beye embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!beye [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Eyeless on {{T.name if T else "the Target"}}!"
+{{f'-desc "When a creature you can see within 30 feet of you makes an attack roll, you can use your reaction to roll one hemocraft die and subtract the number rolled from the creature\'s attack roll. You can choose to use this feature after the creature\'s roll, but before the DM determines whether the attack roll succeeds. The creature is immune if it is immune to blindness."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|You apply this curse to all of the creature\'s attack rolls until the end of the turn. You roll a new hemocraft die for each affected attack."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt, adapted by @""Org" -color <color> -thumb <image>
+-f "{{T.name if T else "Effect"}}|{{"initiative currently not supported" if v and T else "Not in initiative/No Target"}}"
+
+#bhowl
+!servalias bhowl embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!bhowl [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Howl on {{T.name if T else "the Target"}}!"
+{{f'-desc "As an action, you unleash a blood-curdling howl. Each creature within 30 feet of you that can hear you must succeed on a Wisdom saving throw or become frightened of you until the end of your next turn. If they fail their saving throw by 5 or more, they are stunned while frightened in this way. A creature that succeeds on this saving throw is immune to this blood curse for the next 24 hours. You can choose any number of creatures you can see to be unaffected by this howl."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|The range of this curse increases to 60 feet."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt, adapted by @""Org" -color <color> -thumb <image>
+-f "{{T.name if T else "Effect"}}|{{"initiative currently not supported" if v and T else "Not in initiative/No Target"}}"
+
+#bsoul
+!servalias bsoul embed {{B,a,i,c,H,cc=int(get('BloodHunterLevel',get('Blood_HunterLevel',0))), argparse(&ARGS&),'-i' in &ARGS&,combat(),f'!bsoul [-i] [-t target] [amp]',"Blood Maledict"}}
+{{v,T,m=cc_exists(cc) and get_cc(cc)>0,a.last("t"),4+2*(B>4)+2*(B>10)+2*(B>16)}}
+{{amp,R,T=m if 'amp' in a else '',vroll(f'1d{m}'),c.get_combatant(T) if c and T else None}}
+-title "<name> {{"uses" if v else "tries to use"}} Blood Curse of the Howl on {{T.name if T else "the Target"}}!"
+{{f'-desc "When a creature that isn\'t a construct or undead is reduced to 0 hit points within 30 feet of you, you can use your reaction to usher their soul to your patron in exchange for power. Until the end of your next turn, your weapon attacks have advantage."' if B or i else err(f'You do not have this Ability!\n**{H}**')}}
+{{f' -f "Amplified|In addition, you regain an expended warlock spellslot. Once you\'ve amplified this blood curse, you must finish a long rest before you can amplify it again."' if amp else ''}}
+{{'' if i else mod_cc(cc,-1) if v else err(f'No {cc}s remaining.\n**{H}**')}}
+{{f'-f "Amplified Damage|{R}" -f "Health (-{R.total})|{hp_str()}"' if amp else ''}}
+{{mod_hp(-R.total) if amp else ""}}
+{{f'-f "{cc}{" (-1)" if not i else ""}|{cc_str(cc) if cc_exists(cc) else "*None*"}"'}}
+-footer "{{H}} | By @""RiptideMatt, adapted by @""Org" -color <color> -thumb <image>
+-f "{{T.name if T else "Effect"}}|{{"initiative currently not supported" if v and T else "Not in initiative/No Target"}}"
